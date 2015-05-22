@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
+import org.json.*;
 
 public class VoatApiInterface {
 
@@ -19,21 +20,20 @@ public class VoatApiInterface {
 	private String apiToken;
 	
 	public String getToken(String uname, String pwd, String apiKey) throws Exception{
+		// set parameters
 		String urlParamaters = "grant_type=password&username="+uname+"&password="+pwd;
 		URL url = new URL(tokenURL);
 		HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
 		con.setRequestMethod("POST");
 		con.setRequestProperty("Content-Type", "applicaiton/json");
-		con.setRequestProperty("Voat-ApiKey", apiToken);
-		
+		con.setRequestProperty("Voat-ApiKey", apiKey);
+		// make POST
 		con.setDoOutput(true);
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
 		wr.writeBytes(urlParamaters);
 		wr.flush();
 		wr.close();
-		
-
-		
+		// read response
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
 		StringBuffer response = new StringBuffer();
@@ -41,7 +41,10 @@ public class VoatApiInterface {
 			response.append(inputLine);
 		}
 		in.close();
-		return response.toString();
+		// parse token from returned JSON
+		JSONObject json = new JSONObject(response.toString());
+		String token = json.getString("access_token");
+		return token;
 	}
 	
 	
